@@ -96,7 +96,7 @@ export default function Home() {
               <p className="brand-subtitle">Grounded in the uploaded Cricket Rules document</p>
             </div>
           </div>
-          <div className="status-pill">Context: Criket_Rules.docx</div>
+          <div className="status-pill">Context: NPL_Cricket_Rules.docx</div>
         </div>
       </header>
 
