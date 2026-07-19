@@ -8,6 +8,8 @@ type ChatMessage = {
 };
 
 const starterPrompts = [
+  "What are dressing rules?",
+  "Can I wear shorts?",
   "What is the arrival time requirement?",
   "Explain the umpire and scoring responsibilities.",
   "What happens if a team is late?",
@@ -126,7 +128,7 @@ export default function Home() {
           </form>
         </div>
 
-        <aside className="side-panel" aria-label="Suggested questions and deployment note">
+        <aside className="side-panel" aria-label="Suggested questions">
           <section>
             <h2>Suggested Questions</h2>
             <div className="quick-list">
@@ -142,13 +144,6 @@ export default function Home() {
                 </button>
               ))}
             </div>
-          </section>
-          <section className="notice">
-            <h2>Model Setup</h2>
-            <p>
-              Add a Gemini API key in Vercel for natural-language answers. Without it, the app
-              returns the most relevant rules excerpts.
-            </p>
           </section>
         </aside>
       </section>
