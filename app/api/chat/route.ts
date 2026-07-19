@@ -9,7 +9,7 @@ type HistoryMessage = {
   content: string;
 };
 
-class GeminiQuotaError extends Error {}
+class HostedModelFallbackError extends Error {}
 
 const STOP_WORDS = new Set([
   "about",
@@ -119,23 +119,20 @@ function cleanModelText(text: string) {
     .trim();
 }
 
-type GeminiPart = {
-  text?: string;
+type HuggingFaceResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
 };
 
-type GeminiCandidate = {
-  content?: {
-    parts?: GeminiPart[];
-  };
-};
-
-type GeminiResponse = {
-  candidates?: GeminiCandidate[];
-};
-
-async function answerWithGemini(question: string, relevantContext: string, history: HistoryMessage[]) {
-  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+async function answerWithHuggingFace(
+  question: string,
+  relevantContext: string,
+  history: HistoryMessage[]
+) {
+  const model = process.env.HF_MODEL || "openai/gpt-oss-20b:fastest";
   const prompt = [
     "Rules context:",
     relevantContext,
@@ -146,48 +143,41 @@ async function answerWithGemini(question: string, relevantContext: string, histo
     `Question: ${question}`
   ].join("\n");
 
-  const response = await fetch(url, {
+  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
     method: "POST",
     headers: {
-      "x-goog-api-key": process.env.GEMINI_API_KEY || "",
+      Authorization: `Bearer ${process.env.HF_TOKEN}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [
-          {
-            text:
-              "You are a helpful cricket tournament rules assistant. Answer only from the provided rules context. If the context does not answer the question, say that the rules document does not specify it. Keep answers concise and practical for team members. Use plain text only. Do not use Markdown, asterisks, bold text, tables, or code formatting."
-          }
-        ]
-      },
-      contents: [
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful cricket tournament rules assistant. Answer only from the provided rules context. If the context does not answer the question, say that the rules document does not specify it. Keep answers concise and practical for team members. Use plain text only. Do not use Markdown, asterisks, bold text, tables, or code formatting."
+        },
         {
           role: "user",
-          parts: [{ text: prompt }]
+          content: prompt
         }
       ],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 700
-      }
+      stream: false,
+      temperature: 0.2,
+      max_tokens: 700
     })
   });
 
   if (!response.ok) {
     const details = await response.text();
-    if (response.status === 429 || details.includes("RESOURCE_EXHAUSTED")) {
-      throw new GeminiQuotaError("Gemini quota exceeded.");
+    if ([402, 429, 503].includes(response.status)) {
+      throw new HostedModelFallbackError(`Hugging Face hosted inference unavailable: ${details}`);
     }
-    throw new Error(`Gemini request failed: ${details}`);
+    throw new Error(`Hugging Face request failed: ${details}`);
   }
 
-  const data = (await response.json()) as GeminiResponse;
-  const output = data.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text)
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  const data = (await response.json()) as HuggingFaceResponse;
+  const output = data.choices?.[0]?.message?.content?.trim();
 
   return output ? cleanModelText(output) : "The model did not return an answer.";
 }
@@ -209,12 +199,12 @@ export async function POST(request: NextRequest) {
     const relevantContext = selectRelevantContext(context, question);
     const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.HF_TOKEN) {
       return NextResponse.json({ answer: fallbackAnswer(relevantContext, question) });
     }
 
-    const answer = await answerWithGemini(question, relevantContext, history).catch((error) => {
-      if (error instanceof GeminiQuotaError) {
+    const answer = await answerWithHuggingFace(question, relevantContext, history).catch((error) => {
+      if (error instanceof HostedModelFallbackError) {
         return fallbackAnswer(relevantContext, question);
       }
       throw error;

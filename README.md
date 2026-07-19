@@ -16,25 +16,27 @@ Open `http://localhost:3000`.
 Set these locally in `.env.local` and in Vercel project settings:
 
 ```bash
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-3.5-flash
+HF_TOKEN=your_hugging_face_token
+HF_MODEL=openai/gpt-oss-20b:fastest
 ```
 
-`GEMINI_API_KEY` is recommended for conversational answers. If it is missing, the app still works in excerpt-search mode.
+`HF_TOKEN` enables hosted Hugging Face conversational answers. If it is missing, or if hosted inference quota is unavailable, the app still works in excerpt-search mode from the rules document.
 
-Create a free Gemini API key in Google AI Studio:
+Create a Hugging Face token:
 
-1. Go to `https://aistudio.google.com/app/apikey`.
-2. Sign in with your Google account.
-3. Click **Create API key**.
-4. Copy the key into `.env.local` locally and into Vercel environment variables.
+1. Go to `https://huggingface.co/settings/tokens`.
+2. Create a fine-grained token.
+3. Enable permission to make calls to Inference Providers.
+4. Copy the token into `.env.local` locally and into Vercel environment variables.
+
+Hugging Face hosted inference is not free and unlimited. Free accounts receive limited credits/rate-limited access. The app's built-in document-search fallback is the unlimited no-cost path.
 
 ## Deploy To Vercel
 
 1. Push this folder to a GitHub/GitLab/Bitbucket repository.
 2. In Vercel, choose **New Project** and import the repository.
-3. Add `GEMINI_API_KEY` under **Settings > Environment Variables**.
-4. Optionally add `GEMINI_MODEL=gemini-3.5-flash`.
+3. Add `HF_TOKEN` under **Settings > Environment Variables**.
+4. Optionally add `HF_MODEL=openai/gpt-oss-20b:fastest`.
 5. Deploy.
 6. Share the production URL with your team.
 
