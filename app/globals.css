@@ -1,0 +1,286 @@
+:root {
+  color-scheme: light;
+  --background: #f7f6f2;
+  --panel: #ffffff;
+  --ink: #171717;
+  --muted: #63615a;
+  --line: #dbd7cc;
+  --accent: #1f7a63;
+  --accent-strong: #135744;
+  --warning: #b44a1c;
+  --surface: #ece8dd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+}
+
+.topbar-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.brand-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status-pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: var(--accent-strong);
+  background: #f6fbf8;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.shell {
+  max-width: 1160px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 22px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 18px;
+}
+
+.chat-panel,
+.side-panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+}
+
+.chat-panel {
+  min-height: calc(100vh - 125px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+}
+
+.messages {
+  padding: 22px;
+  overflow-y: auto;
+}
+
+.message {
+  max-width: 780px;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 7px;
+}
+
+.message.user {
+  margin-left: auto;
+}
+
+.label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bubble {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.user .bubble {
+  background: #e8f4ef;
+  border-color: #c2dfd3;
+}
+
+.assistant .bubble {
+  background: #fff;
+}
+
+.composer {
+  border-top: 1px solid var(--line);
+  background: #fbfaf7;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.composer textarea {
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.45;
+  outline-color: var(--accent);
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.send-button,
+.quick-button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.send-button {
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  font-weight: 700;
+}
+
+.send-button:hover {
+  background: var(--accent-strong);
+}
+
+.side-panel {
+  padding: 18px;
+  align-self: start;
+  display: grid;
+  gap: 18px;
+}
+
+.side-panel h2 {
+  margin: 0 0 9px;
+  font-size: 15px;
+}
+
+.side-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.quick-list {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-button {
+  background: var(--surface);
+  color: var(--ink);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.quick-button:hover {
+  border-color: var(--accent);
+  background: #f3f1ea;
+}
+
+.notice {
+  border-left: 3px solid var(--warning);
+  padding: 8px 0 8px 12px;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-panel {
+    min-height: 68vh;
+  }
+}
+
+@media (max-width: 620px) {
+  .topbar-inner,
+  .composer-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status-pill {
+    white-space: normal;
+  }
+
+  .shell {
+    padding: 14px;
+  }
+
+  .messages {
+    padding: 16px;
+  }
+}
