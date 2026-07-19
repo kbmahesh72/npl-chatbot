@@ -49,7 +49,13 @@ export default function Home() {
         })
       });
 
-      const payload = (await response.json()) as { answer?: string; error?: string };
+      const contentType = response.headers.get("content-type") || "";
+      const payload = contentType.includes("application/json")
+        ? ((await response.json()) as { answer?: string; error?: string })
+        : {
+            error:
+              "The chat service returned an unexpected page instead of an answer. Please refresh and try again."
+          };
       if (!response.ok) {
         throw new Error(payload.error || "The chatbot could not answer right now.");
       }

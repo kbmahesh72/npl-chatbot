@@ -47,12 +47,26 @@ const STOP_WORDS = new Set([
   "you"
 ]);
 
+const QUERY_SYNONYMS: Record<string, string[]> = {
+  dress: ["uniform", "uniforms", "clothing", "shorts", "shoes", "cleats"],
+  dressing: ["uniform", "uniforms", "clothing", "shorts", "shoes", "cleats"],
+  attire: ["uniform", "uniforms", "clothing", "shorts", "shoes", "cleats"],
+  clothes: ["uniform", "uniforms", "clothing", "shorts"],
+  shorts: ["uniform", "uniforms", "clothing"],
+  shoe: ["shoes", "cleats", "spiked"],
+  shoes: ["cleats", "spiked"]
+};
+
 function tokenize(text: string) {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
+}
+
+function expandQueryWords(words: string[]) {
+  return words.flatMap((word) => [word, ...(QUERY_SYNONYMS[word] || [])]);
 }
 
 function splitContext(context: string) {
@@ -63,7 +77,7 @@ function splitContext(context: string) {
 }
 
 function selectRelevantContext(context: string, question: string) {
-  const words = tokenize(question);
+  const words = expandQueryWords(tokenize(question));
   const query = new Set(words);
   const scored = splitContext(context).map((section, index) => {
     const sectionWords = tokenize(section);
