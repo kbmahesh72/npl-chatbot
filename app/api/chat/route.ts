@@ -9,6 +9,8 @@ type HistoryMessage = {
   content: string;
 };
 
+class GeminiQuotaError extends Error {}
+
 const STOP_WORDS = new Set([
   "about",
   "after",
@@ -99,7 +101,7 @@ function selectRelevantContext(context: string, question: string) {
 
 function fallbackAnswer(relevantContext: string, question: string) {
   return [
-    "I found these relevant rules in the context. Configure `GEMINI_API_KEY` for a more conversational answer.",
+    "I found these relevant rules in the tournament document:",
     "",
     `Question: ${question}`,
     "",
@@ -174,6 +176,9 @@ async function answerWithGemini(question: string, relevantContext: string, histo
 
   if (!response.ok) {
     const details = await response.text();
+    if (response.status === 429 || details.includes("RESOURCE_EXHAUSTED")) {
+      throw new GeminiQuotaError("Gemini quota exceeded.");
+    }
     throw new Error(`Gemini request failed: ${details}`);
   }
 
@@ -208,7 +213,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ answer: fallbackAnswer(relevantContext, question) });
     }
 
-    const answer = await answerWithGemini(question, relevantContext, history);
+    const answer = await answerWithGemini(question, relevantContext, history).catch((error) => {
+      if (error instanceof GeminiQuotaError) {
+        return fallbackAnswer(relevantContext, question);
+      }
+      throw error;
+    });
     return NextResponse.json({ answer });
   } catch (error) {
     return NextResponse.json(
